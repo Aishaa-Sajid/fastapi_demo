@@ -8,7 +8,7 @@ engine = create_async_engine(
     pool_pre_ping=True,
 )
 
-#session factory _ creates database sessions
+# session factory _ creates database sessions
 SessionLocal = async_sessionmaker(
     bind=engine,
     expire_on_commit=False,

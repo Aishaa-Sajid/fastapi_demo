@@ -6,6 +6,7 @@ from datetime import datetime
 from src.database.config import Base
 from .user import User
 
+
 # SQLAlchemy orm 2.0 style
 class Post(Base):
     __tablename__ = "posts"

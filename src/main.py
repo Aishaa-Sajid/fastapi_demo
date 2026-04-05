@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.routes import auth_api, user_api
+from src.routes import auth_api, user_api, post_api, vote_api
 from src.routes import healthcheck_api
 
 
@@ -24,4 +24,6 @@ app.add_middleware(
 
 app.include_router(router=healthcheck_api.router, prefix="/health")
 app.include_router(router=auth_api.router, prefix="/auth")
-app.include_router(router=user_api.router, prefix="/auth")
+app.include_router(router=user_api.router, prefix="/users")
+app.include_router(router=post_api.router, prefix="/posts")
+app.include_router(router=vote_api.router, prefix="/votes")

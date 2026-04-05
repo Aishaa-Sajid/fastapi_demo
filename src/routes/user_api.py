@@ -5,7 +5,7 @@ from src import schemas
 from src.database.dependency import get_pg_db
 from src.crud import user_crud
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(tags=["Users"])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
