@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from src import schemas
 from src.database import models
-
+from src.database.models import Post
 
 async def get_posts(db: AsyncSession, limit: int, skip: int, search: str | None = None):
     """
