@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException,Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
-
+from sqlalchemy.orm import selectinload
 from src import schemas
 from src.database.dependency import get_pg_db
 from src.crud import post_crud
@@ -18,8 +18,7 @@ async def get_posts(
     current_user=Depends(get_current_user),
     limit: int = 10,
     skip: int = 0,
-    search: Optional[str] = "",
-):
+    search: str | None = Query(default=None)):
     """
     Get all posts with pagination and search.
     """
@@ -57,7 +56,7 @@ async def get_post(
     return post
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_200_OK)
 async def delete_post(
     id: int,
     db: AsyncSession = Depends(get_pg_db),
@@ -66,7 +65,12 @@ async def delete_post(
     """
     Delete post (owner only).
     """
-    stmt = select(models.Post).where(models.Post.id == id)
+    # stmt = select(models.Post).where(models.Post.id == id)
+    stmt = (
+        select(models.Post)
+        .options(selectinload(models.Post.owner))
+        .where(models.Post.id == id)
+    )
     result = await db.execute(stmt)
     post = result.scalar_one_or_none()
 
@@ -74,9 +78,9 @@ async def delete_post(
         raise HTTPException(status_code=404, detail="post not found")
 
     if post.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized")
+        raise HTTPException(status_code=403, detail="You are not allowed to delete this post")
 
-    await post_crud.delete_post(db, post)
+    return await post_crud.delete_post(db, post)
 
 
 @router.put("/{id}", response_model=schemas.Post)
@@ -89,7 +93,12 @@ async def update_post(
     """
     Update post (owner only).
     """
-    stmt = select(models.Post).where(models.Post.id == id)
+    # stmt = select(models.Post).where(models.Post.id == id)
+    stmt = (
+        select(models.Post)
+        .options(selectinload(models.Post.owner))
+        .where(models.Post.id == id)
+    )
     result = await db.execute(stmt)
     post = result.scalar_one_or_none()
 
@@ -97,7 +106,7 @@ async def update_post(
         raise HTTPException(status_code=404, detail="post not found")
 
     if post.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized")
+        raise HTTPException(status_code=403, detail="You are not allowed to update this post")
 
     updated = await post_crud.update_post(db, id, updated_post.model_dump())
 

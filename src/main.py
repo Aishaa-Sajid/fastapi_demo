@@ -1,13 +1,19 @@
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.routes import auth_api, user_api, post_api, vote_api
+from src.routes import auth_api, comment_api, profile_api, user_api, post_api, vote_api
 from src.routes import healthcheck_api
 
 
+@asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    yield  # App runs here
+    # Startup logic
+    print("App starting...")
+
+    yield  # app runs here
+
+    # Shutdown logic
+    print("App shutting down...")
 
 
 # Initialize the FastAPI app
@@ -27,3 +33,5 @@ app.include_router(router=auth_api.router, prefix="/auth")
 app.include_router(router=user_api.router, prefix="/users")
 app.include_router(router=post_api.router, prefix="/posts")
 app.include_router(router=vote_api.router, prefix="/votes")
+app.include_router(router=profile_api.router, prefix="/profile")
+app.include_router(router=comment_api.router, prefix="/comments")       

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -23,4 +23,7 @@ class Post(Base):
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
 
-    owner: Mapped["User"] = relationship("User")
+    owner: Mapped["User"] = relationship("User", back_populates="posts")
+
+    comments = relationship("Comment", back_populates="posts")
+    votes = relationship("Vote", back_populates="posts", cascade="all, delete-orphan")
