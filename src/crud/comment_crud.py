@@ -1,12 +1,14 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-
+from typing import Sequence
 from src import schemas
 from src.database import models
 
 
-async def create_comment(db: AsyncSession, comment: schemas.CommentCreate, user_id: int) -> models.Comment:
+async def create_comment(
+    db: AsyncSession, comment: schemas.CommentCreate, user_id: int
+) -> models.Comment:
     """
     Create a new comment in the database.
 
@@ -19,9 +21,7 @@ async def create_comment(db: AsyncSession, comment: schemas.CommentCreate, user_
         models.Comment: created comment instance
     """
     new_comment = models.Comment(
-        content=comment.content,
-        post_id=comment.post_id,
-        user_id=user_id
+        content=comment.content, post_id=comment.post_id, user_id=user_id
     )
 
     db.add(new_comment)
@@ -52,7 +52,9 @@ async def get_comment_by_id(db: AsyncSession, comment_id: int) -> models.Comment
     return result.scalar_one_or_none()
 
 
-async def get_comments_by_post(db: AsyncSession, post_id: int, limit: int = 10, skip: int = 0) -> list[models.Comment]:
+async def get_comments_by_post(
+    db: AsyncSession, post_id: int, limit: int = 10, skip: int = 0
+) -> Sequence[models.Comment]:
     """
     Fetch comments for a specific post with pagination.
 
@@ -63,7 +65,7 @@ async def get_comments_by_post(db: AsyncSession, post_id: int, limit: int = 10, 
         skip (int): number of comments to skip
 
     Returns:
-        list[models.Comment]
+        sequence[models.Comment]
     """
     stmt = (
         select(models.Comment)
@@ -77,7 +79,9 @@ async def get_comments_by_post(db: AsyncSession, post_id: int, limit: int = 10, 
     return result.scalars().all()
 
 
-async def get_comments_by_user(db: AsyncSession, user_id: int, limit: int = 10, skip: int = 0) -> list[models.Comment]:
+async def get_comments_by_user(
+    db: AsyncSession, user_id: int, limit: int = 10, skip: int = 0
+) -> Sequence[models.Comment]:
     """
     Fetch comments by a specific user with pagination.
 
@@ -88,7 +92,7 @@ async def get_comments_by_user(db: AsyncSession, user_id: int, limit: int = 10, 
         skip (int): number of comments to skip
 
     Returns:
-        list[models.Comment]
+        sequence[models.Comment]
     """
     stmt = (
         select(models.Comment)
@@ -102,7 +106,9 @@ async def get_comments_by_user(db: AsyncSession, user_id: int, limit: int = 10, 
     return result.scalars().all()
 
 
-async def update_comment(db: AsyncSession, comment_id: int, updated_data: dict) -> models.Comment | None:
+async def update_comment(
+    db: AsyncSession, comment_id: int, updated_data: dict
+) -> models.Comment | None:
     """
     Update a comment.
 

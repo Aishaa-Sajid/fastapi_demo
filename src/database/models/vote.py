@@ -1,5 +1,6 @@
-from sqlalchemy import  ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+
 # from sqlalchemy.sql.expression import text
 # from sqlalchemy.sql.sqltypes import TIMESTAMP
 

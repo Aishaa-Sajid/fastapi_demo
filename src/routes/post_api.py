@@ -24,6 +24,16 @@ async def get_posts(
     """
     return await post_crud.get_posts(db, limit, skip, search)
 
+@router.get("/no_auth", response_model=List[schemas.PostOut])
+async def get_posts_no_auth(
+    db: AsyncSession = Depends(get_pg_db),
+    limit: int = 10,
+    skip: int = 0,
+    search: str | None = Query(default=None)):
+    """
+    Get all posts with pagination and search.
+    """
+    return await post_crud.get_posts(db, limit, skip, search)
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 async def create_post(

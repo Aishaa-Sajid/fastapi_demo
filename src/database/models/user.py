@@ -19,6 +19,7 @@ class User(Base):
 
     # relationship
     profile = relationship("Profile", back_populates="user", uselist=False)
-    comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
+    comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan"
+    )
     posts = relationship("Post", back_populates="owner", cascade="all, delete-orphan")
     votes = relationship("Vote", back_populates="user", cascade="all, delete-orphan")

@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, status, HTTPException, Query
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
+from typing import List
 from sqlalchemy.orm import selectinload
 from src import schemas
 from src.database.dependency import get_pg_db
