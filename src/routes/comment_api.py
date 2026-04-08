@@ -12,7 +12,7 @@ from src.core.security import get_current_user
 router = APIRouter(tags=["Comments"])
 
 
-@router.get("/{post_id}", response_model=List[schemas.CommentOut])
+@router.get("/post/{post_id}", response_model=List[schemas.CommentOut])
 async def get_comments_for_post(
     post_id: int,
     db: AsyncSession = Depends(get_pg_db),
@@ -26,7 +26,7 @@ async def get_comments_for_post(
     return await comment_crud.get_comments_by_post(db, post_id, limit, skip)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Comment)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.CommentOut)
 async def create_comment(
     comment: schemas.CommentCreate,
     db: AsyncSession = Depends(get_pg_db),
@@ -57,7 +57,7 @@ async def get_comment(
     return comment
 
 
-@router.put("/{comment_id}", response_model=schemas.Comment)
+@router.put("/{comment_id}", response_model=schemas.CommentOut)
 async def update_comment(
     comment_id: int,
     updated_comment: schemas.CommentUpdate,

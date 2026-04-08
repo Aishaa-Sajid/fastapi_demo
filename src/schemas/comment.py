@@ -16,15 +16,6 @@ class CommentUpdate(BaseModel):
     content: str | None = None
 
 
-class Comment(CommentBase):
-    id: int
-    user_id: int
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
 class CommentOut(BaseModel):
     id: int
     content: str

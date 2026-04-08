@@ -44,7 +44,7 @@ async def get_comment_by_id(db: AsyncSession, comment_id: int) -> models.Comment
     """
     stmt = (
         select(models.Comment)
-        .options(selectinload(models.Comment.user), selectinload(models.Comment.post))
+        .options(selectinload(models.Comment.user), selectinload(models.Comment.posts))
         .where(models.Comment.id == comment_id)
     )
 
@@ -92,7 +92,7 @@ async def get_comments_by_user(db: AsyncSession, user_id: int, limit: int = 10, 
     """
     stmt = (
         select(models.Comment)
-        .options(selectinload(models.Comment.post))
+        .options(selectinload(models.Comment.posts))
         .where(models.Comment.user_id == user_id)
         .limit(limit)
         .offset(skip)
