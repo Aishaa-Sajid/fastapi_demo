@@ -1,17 +1,16 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from src import schemas
 from src.database.dependency import get_pg_db
 from src.crud import vote_crud
 from src.core import security
+from src.schemas.vote import Vote
 
 router = APIRouter(tags=["Vote"])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def vote(
-    vote: schemas.Vote,
+    vote: Vote,
     db: AsyncSession = Depends(get_pg_db),
     current_user=Depends(security.get_current_user),
 ):

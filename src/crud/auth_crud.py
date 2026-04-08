@@ -1,7 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-
-from src.database import models
+from src.database.models.user import User
 
 
 async def get_user_by_id(db: AsyncSession, user_id: int):
@@ -13,9 +12,9 @@ async def get_user_by_id(db: AsyncSession, user_id: int):
         user_id (int): user id
 
     Returns:
-        models.User | None
+        User | None
     """
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
+    result = await db.execute(select(User).where(User.id == user_id))
 
     return result.scalars().first()
 
@@ -29,8 +28,8 @@ async def get_user_by_email(db: AsyncSession, email: str):
         email (str): user email
 
     Returns:
-        models.User | None
+        User | None
     """
-    result = await db.execute(select(models.User).where(models.User.email == email))
+    result = await db.execute(select(User).where(User.email == email))
 
     return result.scalars().first()

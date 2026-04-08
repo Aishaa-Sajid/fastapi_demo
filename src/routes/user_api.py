@@ -1,15 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from src import schemas
 from src.database.dependency import get_pg_db
 from src.crud import user_crud
+from src.schemas.user import UserCreate, UserOut
 
 router = APIRouter(tags=["Users"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
-async def create_user(user: schemas.UserCreate, db: AsyncSession = Depends(get_pg_db)):
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserOut)
+async def create_user(user: UserCreate, db: AsyncSession = Depends(get_pg_db)):
     """
     API endpoint to create a new user.
     """
@@ -17,7 +16,7 @@ async def create_user(user: schemas.UserCreate, db: AsyncSession = Depends(get_p
     return await user_crud.create_user(db, user)
 
 
-@router.get("/{id}", response_model=schemas.UserOut)
+@router.get("/{id}", response_model=UserOut)
 async def get_user(id: int, db: AsyncSession = Depends(get_pg_db)):
     """
     API endpoint to get a user by ID.

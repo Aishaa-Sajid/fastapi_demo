@@ -1,11 +1,12 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src import schemas, utils
-from src.database import models
+from src import utils
+from src.schemas.user import UserCreate
+from src.database.models.user import User
 
 
-async def create_user(db: AsyncSession, user: schemas.UserCreate) -> models.User:
+async def create_user(db: AsyncSession, user: UserCreate) -> User:
     """
     Create a new user in the database.
 
@@ -18,7 +19,7 @@ async def create_user(db: AsyncSession, user: schemas.UserCreate) -> models.User
     """
     hashed_password = utils.hash(user.password)
 
-    new_user = models.User(
+    new_user = User(
         **user.model_dump(exclude={"password"}), password=hashed_password
     )
 
@@ -29,7 +30,7 @@ async def create_user(db: AsyncSession, user: schemas.UserCreate) -> models.User
     return new_user
 
 
-async def get_user_by_id(db: AsyncSession, user_id: int) -> models.User | None:
+async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
     """
     Fetch a user by ID.
 
@@ -41,6 +42,6 @@ async def get_user_by_id(db: AsyncSession, user_id: int) -> models.User | None:
         models.User | None
     """
 
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
+    result = await db.execute(select(User).where(User.id == user_id))
 
     return result.scalar_one_or_none()

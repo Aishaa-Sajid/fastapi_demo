@@ -1,9 +1,10 @@
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from src import schemas
-from src.database import models
-from src.database.models import Post
+from src.schemas.post import PostCreate
+from src.database.models.vote import Vote
+from src.database.models.post import Post
+
 
 async def get_posts(db: AsyncSession, limit: int, skip: int, search: str | None = None):
     """
@@ -11,35 +12,31 @@ async def get_posts(db: AsyncSession, limit: int, skip: int, search: str | None 
     Async SQLAlchemy 2.0 version.
     """
     stmt = (
-        select(models.Post, func.count(models.Vote.post_id).label("votes"))
-        .join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True)
-        .options(selectinload(models.Post.owner))
-        .group_by(models.Post.id)
-        # .where(models.Post.title.contains(search))
+        select(Post, func.count(Vote.post_id).label("votes"))
+        .join(Vote, Vote.post_id == Post.id, isouter=True)
+        .options(selectinload(Post.owner))
+        .group_by(Post.id)
         .limit(limit)
         .offset(skip)
     )
 
     if search:
-        stmt = stmt.where(models.Post.title.contains(search))
+        stmt = stmt.where(Post.title.contains(search))
 
     result = await db.execute(stmt)
-    # return result.all()
 
     posts = []
     for post, votes in result.all():
-        posts.append({
-            "post": post,
-            "votes": votes
-        })
+        posts.append({"post": post, "votes": votes})
 
     return posts
 
-async def create_post(db: AsyncSession, post: schemas.PostCreate, user_id: int) -> Post:
+
+async def create_post(db: AsyncSession, post: PostCreate, user_id: int) -> Post:
     """
     Create a new post (async).
     """
-    new_post = models.Post(owner_id=user_id, **post.model_dump())
+    new_post = Post(owner_id=user_id, **post.model_dump())
 
     db.add(new_post)
     await db.commit()
@@ -53,31 +50,25 @@ async def get_post(db: AsyncSession, post_id: int):
     Fetch single post with vote count.
     """
     stmt = (
-        select(models.Post, func.count(models.Vote.post_id).label("votes"))
-        .join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True)
-        .options(selectinload(models.Post.owner))
-        .group_by(models.Post.id)
-        .where(models.Post.id == post_id)
+        select(Post, func.count(Vote.post_id).label("votes"))
+        .join(Vote, Vote.post_id == Post.id, isouter=True)
+        .options(selectinload(Post.owner))
+        .group_by(Post.id)
+        .where(Post.id == post_id)
     )
 
     result = await db.execute(stmt)
-    # return result.first()
     row = result.first()
 
     if not row:
         return None
 
     post, votes = row
-    # post.votes = votes   # attach votes
 
-    # return post
-    return {
-    "Post": post,
-    "votes": votes
-}
+    return {"Post": post, "votes": votes}
 
 
-async def delete_post(db: AsyncSession, post: models.Post):
+async def delete_post(db: AsyncSession, post: Post):
     """
     Delete a post instance.
     """
@@ -85,14 +76,12 @@ async def delete_post(db: AsyncSession, post: models.Post):
     await db.commit()
     return {"message": "Post deleted successfully"}
 
+
 async def update_post(db: AsyncSession, post_id: int, updated_data: dict):
     """
     Update post using async SQLAlchemy 2.0 style.
     """
-    stmt = (
-    select(models.Post)
-    .options(selectinload(models.Post.owner))   # 🔥 add this
-    .where(models.Post.id == post_id))
+    stmt = select(Post).options(selectinload(Post.owner)).where(Post.id == post_id)
     result = await db.execute(stmt)
     post = result.scalar_one_or_none()
 

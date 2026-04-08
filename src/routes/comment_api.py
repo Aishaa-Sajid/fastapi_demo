@@ -1,18 +1,17 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
 from sqlalchemy.orm import selectinload
-from src import schemas
 from src.database.dependency import get_pg_db
 from src.crud import comment_crud
-from src.database import models
+from src.database.models import Comment
 from sqlalchemy import select
 from src.core.security import get_current_user
+from src.schemas.comment import CommentOut, CommentCreate, CommentUpdate
 
 router = APIRouter(tags=["Comments"])
 
 
-@router.get("/post/{post_id}", response_model=List[schemas.CommentOut])
+@router.get("/post/{post_id}", response_model=list[CommentOut])
 async def get_comments_for_post(
     post_id: int,
     db: AsyncSession = Depends(get_pg_db),
@@ -26,9 +25,9 @@ async def get_comments_for_post(
     return await comment_crud.get_comments_by_post(db, post_id, limit, skip)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.CommentOut)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=CommentOut)
 async def create_comment(
-    comment: schemas.CommentCreate,
+    comment: CommentCreate,
     db: AsyncSession = Depends(get_pg_db),
     current_user=Depends(get_current_user),
 ):
@@ -38,7 +37,7 @@ async def create_comment(
     return await comment_crud.create_comment(db, comment, current_user.id)
 
 
-@router.get("/{comment_id}", response_model=schemas.CommentOut)
+@router.get("/{comment_id}", response_model=CommentOut)
 async def get_comment(
     comment_id: int,
     db: AsyncSession = Depends(get_pg_db),
@@ -51,16 +50,17 @@ async def get_comment(
 
     if not comment:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"comment with id {comment_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"comment with id {comment_id} not found",
         )
 
     return comment
 
 
-@router.put("/{comment_id}", response_model=schemas.CommentOut)
+@router.put("/{comment_id}", response_model=CommentOut)
 async def update_comment(
     comment_id: int,
-    updated_comment: schemas.CommentUpdate,
+    updated_comment: CommentUpdate,
     db: AsyncSession = Depends(get_pg_db),
     current_user=Depends(get_current_user),
 ):
@@ -68,9 +68,9 @@ async def update_comment(
     Update comment (owner only).
     """
     stmt = (
-        select(models.Comment)
-        .options(selectinload(models.Comment.user))
-        .where(models.Comment.id == comment_id)
+        select(Comment)
+        .options(selectinload(Comment.user))
+        .where(Comment.id == comment_id)
     )
     result = await db.execute(stmt)
     comment = result.scalar_one_or_none()
@@ -79,7 +79,9 @@ async def update_comment(
         raise HTTPException(status_code=404, detail="comment not found")
 
     if comment.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You are not allowed to update this comment")
+        raise HTTPException(
+            status_code=403, detail="You are not allowed to update this comment"
+        )
 
     updated_data = updated_comment.model_dump(exclude_unset=True)
     updated = await comment_crud.update_comment(db, comment_id, updated_data)
@@ -97,9 +99,9 @@ async def delete_comment(
     Delete comment (owner only).
     """
     stmt = (
-        select(models.Comment)
-        .options(selectinload(models.Comment.user))
-        .where(models.Comment.id == comment_id)
+        select(Comment)
+        .options(selectinload(Comment.user))
+        .where(Comment.id == comment_id)
     )
     result = await db.execute(stmt)
     comment = result.scalar_one_or_none()
@@ -108,12 +110,14 @@ async def delete_comment(
         raise HTTPException(status_code=404, detail="comment not found")
 
     if comment.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You are not allowed to delete this comment")
+        raise HTTPException(
+            status_code=403, detail="You are not allowed to delete this comment"
+        )
 
     return await comment_crud.delete_comment(db, comment_id)
 
 
-@router.get("/user/{user_id}", response_model=List[schemas.CommentOut])
+@router.get("/user/{user_id}", response_model=list[CommentOut])
 async def get_comments_by_user(
     user_id: int,
     db: AsyncSession = Depends(get_pg_db),
