@@ -5,7 +5,7 @@ from src.database.dependency import get_pg_db
 from src.crud import post_crud
 from sqlalchemy import select
 from src.core.security import get_current_user
-from src.schemas.post import Post, PostCreate, PostOut
+from src.schemas.post import PostSchema, PostCreate, PostOut
 from src.database.models import Post
 
 router = APIRouter(tags=["Posts"])
@@ -38,7 +38,7 @@ async def get_posts_no_auth(
     return await post_crud.get_posts(db, limit, skip, search)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=Post)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostSchema)
 async def create_post(
     post: PostCreate,
     db: AsyncSession = Depends(get_pg_db),
@@ -94,7 +94,7 @@ async def delete_post(
     return await post_crud.delete_post(db, post)
 
 
-@router.put("/{id}", response_model=Post)
+@router.put("/{id}", response_model=PostSchema)
 async def update_post(
     id: int,
     updated_post: PostCreate,

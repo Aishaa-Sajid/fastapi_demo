@@ -14,7 +14,7 @@ class PostCreate(PostBase):
     pass
 
 
-class Post(PostBase):
+class PostSchema(PostBase):
     id: int
     created_at: datetime
     owner_id: int
@@ -24,7 +24,7 @@ class Post(PostBase):
 
 
 class PostOut(BaseModel):
-    post: Post
+    post: PostSchema
     votes: int
 
     model_config = {"from_attributes": True}
