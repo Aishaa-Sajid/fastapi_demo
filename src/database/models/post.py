@@ -25,5 +25,5 @@ class Post(Base):
 
     owner: Mapped["User"] = relationship("User", back_populates="posts")
 
-    comments = relationship("Comment", back_populates="posts")
+    comments = relationship("Comment", back_populates="post")
     votes = relationship("Vote", back_populates="posts", cascade="all, delete-orphan")

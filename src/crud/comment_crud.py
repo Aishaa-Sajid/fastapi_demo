@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from collections.abc import Sequence
-from src.schemas.comment import CommentCreate
+from src.schemas.comment import CommentCreate, CommentUpdate
 from src.database.models.comment import Comment
 
 
@@ -44,7 +44,7 @@ async def get_comment_by_id(db: AsyncSession, comment_id: int) -> Comment | None
     """
     stmt = (
         select(Comment)
-        .options(selectinload(Comment.user), selectinload(Comment.posts))
+        .options(selectinload(Comment.user), selectinload(Comment.post))
         .where(Comment.id == comment_id)
     )
 
@@ -96,7 +96,7 @@ async def get_comments_by_user(
     """
     stmt = (
         select(Comment)
-        .options(selectinload(Comment.posts))
+        .options(selectinload(Comment.post))
         .where(Comment.user_id == user_id)
         .limit(limit)
         .offset(skip)
@@ -107,7 +107,7 @@ async def get_comments_by_user(
 
 
 async def update_comment(
-    db: AsyncSession, comment_id: int, updated_data: dict
+    db: AsyncSession, comment_id: int, updated_data: CommentUpdate, user_id: int
 ) -> Comment | None:
     """
     Update a comment.
@@ -127,7 +127,14 @@ async def update_comment(
     if not comment:
         return None
 
-    for key, value in updated_data.items():
+    update_dict = updated_data.model_dump(
+        exclude_unset=True
+    )  # exclude_unset=True already removes missing fields
+
+    # schema--> dict conversion
+    for key, value in update_dict.items():
+        # if value is None:
+        #     continue
         if hasattr(comment, key):
             setattr(comment, key, value)
 

@@ -1,7 +1,10 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.dependency import get_pg_db
 from src.core.security import get_current_user
+from src.database.models import User
 from src.schemas.profile import ProfileCreate, ProfileOut, ProfileUpdate
 from src.crud import profile_crud
 
@@ -12,8 +15,8 @@ router = APIRouter(tags=["Profile"])
 @router.post("/", response_model=ProfileOut)
 async def create_profile(
     profile: ProfileCreate,
+    current_user: Annotated[User, Depends(get_current_user)],
     db: AsyncSession = Depends(get_pg_db),
-    current_user=Depends(get_current_user),
 ):
     existing = await profile_crud.get_profile_by_user_id(db, current_user.id)
 
@@ -26,8 +29,8 @@ async def create_profile(
 #  Get My Profile
 @router.get("/", response_model=ProfileOut)
 async def get_my_profile(
-    db: AsyncSession = Depends(get_pg_db),
-    current_user=Depends(get_current_user),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_pg_db)
 ):
     profile = await profile_crud.get_profile_by_user_id(db, current_user.id)
 
@@ -41,8 +44,8 @@ async def get_my_profile(
 @router.put("/", response_model=ProfileOut)
 async def update_profile(
     updated_data: ProfileUpdate,
-    db: AsyncSession = Depends(get_pg_db),
-    current_user=Depends(get_current_user),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_pg_db)
 ):
     profile = await profile_crud.get_profile_by_user_id(db, current_user.id)
 
@@ -55,8 +58,8 @@ async def update_profile(
 # Delete Profile
 @router.delete("/", status_code=status.HTTP_200_OK)
 async def delete_profile(
-    db: AsyncSession = Depends(get_pg_db),
-    current_user=Depends(get_current_user),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_pg_db)
 ):
     profile = await profile_crud.get_profile_by_user_id(db, current_user.id)
 

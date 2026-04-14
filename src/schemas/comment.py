@@ -14,7 +14,10 @@ class CommentCreate(CommentBase):
 
 class CommentUpdate(BaseModel):
     content: str | None = None
-
+    
+    model_config = {
+        "extra": "forbid"   # 🚀 THIS LINE FIXES IT
+    }
 
 class CommentOut(BaseModel):
     id: int

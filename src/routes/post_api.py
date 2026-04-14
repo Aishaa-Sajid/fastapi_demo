@@ -1,3 +1,5 @@
+from typing_extensions import Annotated
+
 from fastapi import APIRouter, Depends, status, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -6,15 +8,15 @@ from src.crud import post_crud
 from sqlalchemy import select
 from src.core.security import get_current_user
 from src.schemas.post import PostSchema, PostCreate, PostOut
-from src.database.models import Post
+from src.database.models import Post,User
 
 router = APIRouter(tags=["Posts"])
 
 
 @router.get("/", response_model=list[PostOut])
 async def get_posts(
+    _: Annotated[User, Depends(get_current_user)],
     db: AsyncSession = Depends(get_pg_db),
-    current_user=Depends(get_current_user),
     limit: int = 10,
     skip: int = 0,
     search: str | None = Query(default=None),
@@ -41,8 +43,8 @@ async def get_posts_no_auth(
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostSchema)
 async def create_post(
     post: PostCreate,
-    db: AsyncSession = Depends(get_pg_db),
-    current_user=Depends(get_current_user),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_pg_db)
 ):
     """
     Create a new post.
@@ -54,11 +56,12 @@ async def create_post(
 async def get_post(
     id: int,
     db: AsyncSession = Depends(get_pg_db),
-    current_user=Depends(get_current_user),
+    _=Depends(get_current_user),
 ):
     """
     Get single post by ID.
     """
+    
     post = await post_crud.get_post(db, id)
 
     if not post:
@@ -72,9 +75,10 @@ async def get_post(
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 async def delete_post(
     id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
     db: AsyncSession = Depends(get_pg_db),
-    current_user=Depends(get_current_user),
 ):
+    
     """
     Delete post (owner only).
     """
@@ -98,8 +102,10 @@ async def delete_post(
 async def update_post(
     id: int,
     updated_post: PostCreate,
-    db: AsyncSession = Depends(get_pg_db),
-    current_user=Depends(get_current_user),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_pg_db)
+    
+    
 ):
     """
     Update post (owner only).

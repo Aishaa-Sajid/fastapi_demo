@@ -29,6 +29,6 @@ class Comment(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     # 🔹 Relationships
-    posts: Mapped["Post"] = relationship("Post", back_populates="comments")
+    post: Mapped["Post"] = relationship("Post", back_populates="comments")
 
     user: Mapped["User"] = relationship("User", back_populates="comments")
